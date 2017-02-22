@@ -32,7 +32,7 @@ import MySQLdb
 
 import requests
 
-from operator import attrgetter
+import time
 
 class Prediction():
     def __init__(self, revision_id, rating, probs):
@@ -164,7 +164,7 @@ class Predictor():
                         logging.warning("ORES response keys not as expected")
 
                     # something didn't go right, let's wait and try again
-                    sleep(500)
+                    time.sleep(0.5)
 
             # update i to iterate to next batch
             i += self.iter_size
@@ -253,9 +253,13 @@ class Predictor():
         #   calculate probability article rating is greater than target
         wp10_map = { rating: idx for idx, rating in enumerate(self.wp10)}
         target_idx = wp10_map[target]
-        
+
         for page_title, rev_id in art_rev_map.items():
-            rev_pred = rev_pred_map[rev_id]
+            try:
+                rev_pred = rev_pred_map[rev_id]
+            except KeyError:
+                # We don't have predictions for this revision
+                continue
 
             ## Is prediction more than 'distance' away from 'target'?
             if target_idx - wp10_map[rev_pred.rating] >= distance:
