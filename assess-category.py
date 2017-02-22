@@ -160,8 +160,10 @@ class Predictor():
                         break
                     except ValueError:
                         logging.warning("Unable to decode ORES response as JSON")
+                        logging.warning("url={}".format(url))
                     except KeyError:
                         logging.warning("ORES response keys not as expected")
+                        logging.warning("url={}".format(url))
 
                     # something didn't go right, let's wait and try again
                     time.sleep(0.5)
@@ -244,6 +246,16 @@ class Predictor():
             for row in self.db_cursor.fetchall():
                 art_rev_map[page_title] = str(row['page_latest'])
 
+        # If we cannot find a latest revision for a given page, flag the title
+        del_list = []
+        for page_title, rev_id in art_rev_map.items():
+            if int(rev_id) <= 0:
+                logging.warning('could not find a latest revision for {}'.format(page_title))
+                del_list.append(page_title)
+
+        for page_title in del_list:
+            del(art_rev_map[page_title])
+                
         # iterate over groups of revision IDs and retrieve predictions,
         # building a map from revision ID to prediction
         rev_pred_map = self.get_predictions(list(art_rev_map.values()))
