@@ -293,7 +293,7 @@ class Predictor():
         :type target: str
         '''
 
-        table_start= '''{{|
+        table_start= '''{{| class="wikitable sortable"
 !  Title
 !  Predicted class
 !  P(> {})'''.format(target)
